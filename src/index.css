@@ -1,96 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core palette - Playful gaming meets productivity */
+    --background: 210 20% 98%;
+    --foreground: 220 25% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 25% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 25% 10%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Cyan primary - energetic, focused */
+    --primary: 187 72% 37%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Soft lavender secondary */
+    --secondary: 250 60% 95%;
+    --secondary-foreground: 250 50% 40%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 220 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Purple accent for gamification */
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Task types */
+    --focus: 210 100% 50%;
+    --focus-foreground: 0 0% 100%;
+    --habit: 145 63% 42%;
+    --habit-foreground: 0 0% 100%;
+    --quest: 280 68% 55%;
+    --quest-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Status colors */
+    --success: 145 63% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --radius: 0.5rem;
+    /* XP & Coins */
+    --xp: 262 83% 58%;
+    --xp-glow: 262 83% 70%;
+    --coin: 45 93% 47%;
+    --coin-glow: 45 93% 60%;
 
-    --sidebar-background: 0 0% 98%;
+    /* Pet types */
+    --fire: 15 90% 55%;
+    --water: 200 85% 50%;
+    --grass: 130 60% 45%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 187 72% 37%;
+    --radius: 1rem;
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(187 72% 37%) 0%, hsl(200 85% 50%) 100%);
+    --gradient-xp: linear-gradient(90deg, hsl(262 83% 58%) 0%, hsl(280 68% 55%) 100%);
+    --gradient-coin: linear-gradient(135deg, hsl(45 93% 47%) 0%, hsl(38 92% 55%) 100%);
+    --gradient-fire: linear-gradient(135deg, hsl(15 90% 55%) 0%, hsl(35 90% 55%) 100%);
+    --gradient-water: linear-gradient(135deg, hsl(200 85% 50%) 0%, hsl(220 80% 60%) 100%);
+    --gradient-grass: linear-gradient(135deg, hsl(130 60% 45%) 0%, hsl(150 55% 50%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Shadows */
+    --shadow-sm: 0 2px 8px hsl(220 25% 10% / 0.06);
+    --shadow-md: 0 4px 16px hsl(220 25% 10% / 0.08);
+    --shadow-lg: 0 8px 32px hsl(220 25% 10% / 0.12);
+    --shadow-glow: 0 0 20px hsl(187 72% 37% / 0.3);
+    --shadow-xp: 0 0 20px hsl(262 83% 58% / 0.4);
+    --shadow-coin: 0 0 16px hsl(45 93% 47% / 0.5);
 
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Navigation */
+    --nav-height: 5rem;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 225 25% 8%;
+    --foreground: 210 20% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 225 25% 12%;
+    --card-foreground: 210 20% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 225 25% 12%;
+    --popover-foreground: 210 20% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 187 72% 45%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 250 30% 20%;
+    --secondary-foreground: 250 60% 80%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 225 20% 18%;
+    --muted-foreground: 220 15% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 262 83% 65%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --border: 225 20% 20%;
+    --input: 225 20% 20%;
+    --ring: 187 72% 45%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --gradient-card: linear-gradient(180deg, hsl(225 25% 14%) 0%, hsl(225 25% 10%) 100%);
+    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.25);
+    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.35);
   }
 }
 
@@ -100,6 +124,133 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iOS safe area support */
+  .safe-bottom {
+    padding-bottom: calc(var(--nav-height) + var(--safe-area-bottom));
+  }
+}
+
+@layer components {
+  /* Pixel font for game elements */
+  .font-pixel {
+    font-family: 'Press Start 2P', cursive;
+  }
+
+  /* Glass morphism cards */
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl;
+  }
+
+  /* XP bar styling */
+  .xp-bar {
+    background: var(--gradient-xp);
+    box-shadow: var(--shadow-xp);
+  }
+
+  /* Coin styling */
+  .coin-glow {
+    background: var(--gradient-coin);
+    box-shadow: var(--shadow-coin);
+  }
+
+  /* Pet type backgrounds */
+  .pet-fire {
+    background: var(--gradient-fire);
+  }
+  .pet-water {
+    background: var(--gradient-water);
+  }
+  .pet-grass {
+    background: var(--gradient-grass);
+  }
+
+  /* Task type badges */
+  .task-focus {
+    @apply bg-focus text-focus-foreground;
+  }
+  .task-habit {
+    @apply bg-habit text-habit-foreground;
+  }
+  .task-quest {
+    @apply bg-quest text-quest-foreground;
+  }
+
+  /* Urgency indicators */
+  .urgency-low {
+    @apply border-l-4 border-l-muted-foreground/30;
+  }
+  .urgency-medium {
+    @apply border-l-4 border-l-warning;
+  }
+  .urgency-high {
+    @apply border-l-4 border-l-destructive;
+  }
+
+  /* iOS-style bottom nav */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 glass border-t border-border/50;
+    padding-bottom: var(--safe-area-bottom);
+  }
+}
+
+@layer utilities {
+  /* Animations */
+  .animate-bounce-slow {
+    animation: bounce 2s infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-wiggle {
+    animation: wiggle 0.5s ease-in-out;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+      filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.5));
+    }
+    50% {
+      opacity: 0.9;
+      filter: drop-shadow(0 0 16px hsl(var(--primary) / 0.8));
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes wiggle {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-5deg);
+    }
+    75% {
+      transform: rotate(5deg);
+    }
+  }
+
+  /* Pixel art rendering */
+  .pixel-perfect {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
   }
 }
