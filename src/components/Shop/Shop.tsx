@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PixelPet } from '@/components/Pet/PixelPet';
+import { EvolvingPet } from '@/components/Pet/EvolvingPet';
 import { CoinDisplay } from '@/components/Common/CoinDisplay';
 import { useGameStore } from '@/store/gameStore';
 import { ShopItem, Rarity } from '@/types';
@@ -206,34 +206,14 @@ export const Shop = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="p-6 mb-6 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+          <Card className="p-6 mb-6 bg-gradient-to-br from-primary/10 via-background to-accent/10 overflow-hidden">
             <div className="flex items-center justify-center">
-              {pet && (
-                <div className="relative">
-                  <PixelPet type={pet.type} size="xl" />
-                  
-                  {/* Equipped decorations */}
-                  <div className="absolute -top-2 -right-2 flex flex-wrap gap-1 max-w-[60px]">
-                    {pet.equippedItems.map((itemId) => {
-                      const item = SHOP_ITEMS.find(i => i.id === itemId);
-                      if (!item) return null;
-                      return (
-                        <motion.span 
-                          key={itemId} 
-                          className="text-lg"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                        >
-                          {item.spriteUrl}
-                        </motion.span>
-                      );
-                    })}
-                  </div>
-                </div>
+              {pet && user && (
+                <EvolvingPet type={pet.type} level={user.level} size="xl" showEquipment={true} />
               )}
             </div>
             <p className="text-center text-sm text-muted-foreground mt-3">
-              {pet?.name} • Level {pet?.level}
+              {pet?.name} • Level {user?.level}
             </p>
           </Card>
         </motion.div>
