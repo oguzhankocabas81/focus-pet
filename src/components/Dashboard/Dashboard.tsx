@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Plus, ChevronRight, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { PixelPet } from '@/components/Pet/PixelPet';
+import { EvolvingPet, EVOLUTION_NAMES, getEvolutionStage } from '@/components/Pet/EvolvingPet';
 import { XPBar } from '@/components/Common/XPBar';
 import { CoinDisplay } from '@/components/Common/CoinDisplay';
 import { StreakBadge } from '@/components/Common/StreakBadge';
@@ -67,8 +67,11 @@ export const Dashboard = () => {
         >
           <Card className="relative overflow-hidden p-6 bg-gradient-to-br from-card via-card to-primary/5">
             <div className="flex flex-col items-center text-center">
-              <PixelPet type={pet.type} size="xl" />
+              <EvolvingPet type={pet.type} level={user.level} size="xl" showEquipment={true} />
               <h3 className="mt-3 font-pixel text-sm text-foreground">{pet.name}</h3>
+              <p className="text-xs text-muted-foreground">
+                {EVOLUTION_NAMES[pet.type][getEvolutionStage(user.level)].name}
+              </p>
               
               {/* Pet stats */}
               <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
