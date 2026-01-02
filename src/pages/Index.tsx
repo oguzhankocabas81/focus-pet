@@ -1,12 +1,39 @@
+import { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { Onboarding } from '@/components/Onboarding/Onboarding';
 import { Dashboard } from '@/components/Dashboard/Dashboard';
 import { PomodoroTimer } from '@/components/PomodoroTimer/PomodoroTimer';
 import { TaskManager } from '@/components/TaskManager/TaskManager';
+import { Logbook } from '@/components/Logbook/Logbook';
+import { Shop } from '@/components/Shop/Shop';
 import { BottomNav } from '@/components/Navigation/BottomNav';
+import { LevelUpOverlay } from '@/components/Common/LevelUpOverlay';
+import { getCoinsForLevel } from '@/utils/constants';
 
 const Index = () => {
-  const { app } = useGameStore();
+  const { app, user, updateStreak } = useGameStore();
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [levelUpData, setLevelUpData] = useState({ level: 1, coins: 5 });
+  const prevLevelRef = useRef(user?.level || 1);
+
+  // Check for level up
+  useEffect(() => {
+    if (user && user.level > prevLevelRef.current) {
+      setLevelUpData({
+        level: user.level,
+        coins: getCoinsForLevel(user.level),
+      });
+      setShowLevelUp(true);
+    }
+    prevLevelRef.current = user?.level || 1;
+  }, [user?.level]);
+
+  // Update streak on mount
+  useEffect(() => {
+    if (app.isOnboarded) {
+      updateStreak();
+    }
+  }, [app.isOnboarded, updateStreak]);
 
   if (!app.isOnboarded) {
     return <Onboarding />;
@@ -21,23 +48,9 @@ const Index = () => {
       case 'tasks':
         return <TaskManager />;
       case 'logbook':
-        return (
-          <div className="min-h-screen pb-24 px-4 pt-6 flex items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <div className="text-5xl mb-4">📚</div>
-              <p>Logbook coming soon!</p>
-            </div>
-          </div>
-        );
+        return <Logbook />;
       case 'shop':
-        return (
-          <div className="min-h-screen pb-24 px-4 pt-6 flex items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <div className="text-5xl mb-4">🛒</div>
-              <p>Shop coming soon!</p>
-            </div>
-          </div>
-        );
+        return <Shop />;
       default:
         return <Dashboard />;
     }
@@ -47,6 +60,14 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {renderContent()}
       <BottomNav />
+      
+      {/* Level Up Overlay */}
+      <LevelUpOverlay
+        show={showLevelUp}
+        level={levelUpData.level}
+        coinsEarned={levelUpData.coins}
+        onClose={() => setShowLevelUp(false)}
+      />
     </div>
   );
 };
