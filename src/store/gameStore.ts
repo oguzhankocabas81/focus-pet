@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { 
   User, Pet, Task, LogbookEntry, PomodoroState, 
-  AppState, TabType, TaskType, UrgencyLevel, PetType 
+  AppState, TabType, PetType, AppSettings
 } from '@/types';
+import { EquippedItems, ItemSlot } from '@/types/items';
 import { 
   getXPForLevel, getCoinsForLevel, TASK_POINTS, 
   DEFAULT_POMODORO_SETTINGS, getStreakReward 
@@ -12,17 +13,21 @@ import {
 interface GameStore {
   // App State
   app: AppState;
+  settings: AppSettings;
   setOnboarded: (value: boolean) => void;
   setCurrentTab: (tab: TabType) => void;
+  updateSettings: (settings: Partial<AppSettings>) => void;
 
   // User
   user: User | null;
   createUser: (name: string, petType: PetType, petName: string) => void;
+  updateUserName: (name: string) => void;
   updateStreak: () => void;
 
   // Pet
   pet: Pet | null;
   updatePetHappiness: (amount: number) => void;
+  updatePetName: (name: string) => void;
   feedPet: () => void;
 
   // Tasks
@@ -53,10 +58,12 @@ interface GameStore {
   addXP: (amount: number) => void;
   addCoins: (amount: number) => void;
 
-  // Inventory
+  // Inventory - Slot-based equipment system
   ownedItems: string[];
+  equippedItems: EquippedItems;
   purchaseItem: (itemId: string, cost: number) => boolean;
-  equipItem: (itemId: string) => void;
+  equipItem: (itemId: string, slot: ItemSlot) => void;
+  unequipSlot: (slot: ItemSlot) => void;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 15);
@@ -71,11 +78,18 @@ export const useGameStore = create<GameStore>()(
         isOnboarded: false,
         currentTab: 'dashboard',
       },
+      settings: {
+        theme: 'system',
+        language: 'en',
+      },
       setOnboarded: (value) => set((state) => ({ 
         app: { ...state.app, isOnboarded: value } 
       })),
       setCurrentTab: (tab) => set((state) => ({ 
         app: { ...state.app, currentTab: tab } 
+      })),
+      updateSettings: (newSettings) => set((state) => ({
+        settings: { ...state.settings, ...newSettings }
       })),
 
       // User
@@ -90,7 +104,7 @@ export const useGameStore = create<GameStore>()(
           petId,
           level: 1,
           currentXP: 0,
-          totalCoins: 0,
+          totalCoins: 10000, // Start with 10000 coins for testing
           dailyStreak: 1,
           lastLoginDate: getTodayDate(),
           createdAt: new Date().toISOString(),
@@ -111,6 +125,10 @@ export const useGameStore = create<GameStore>()(
         set({ user, pet });
       },
 
+      updateUserName: (name) => set((state) => ({
+        user: state.user ? { ...state.user, name } : null
+      })),
+
       updateStreak: () => {
         const { user } = get();
         if (!user) return;
@@ -118,7 +136,7 @@ export const useGameStore = create<GameStore>()(
         const today = getTodayDate();
         const lastLogin = user.lastLoginDate;
 
-        if (lastLogin === today) return; // Already logged in today
+        if (lastLogin === today) return;
 
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -128,11 +146,9 @@ export const useGameStore = create<GameStore>()(
         let bonusCoins = 0;
 
         if (lastLogin === yesterdayStr) {
-          // Consecutive day
           newStreak += 1;
           bonusCoins = getStreakReward(newStreak);
         } else {
-          // Streak broken
           newStreak = 1;
         }
 
@@ -153,6 +169,9 @@ export const useGameStore = create<GameStore>()(
           ...state.pet,
           happiness: Math.max(0, Math.min(100, state.pet.happiness + amount)),
         } : null,
+      })),
+      updatePetName: (name) => set((state) => ({
+        pet: state.pet ? { ...state.pet, name } : null
       })),
       feedPet: () => set((state) => ({
         pet: state.pet ? { ...state.pet, hunger: 0 } : null,
@@ -191,21 +210,16 @@ export const useGameStore = create<GameStore>()(
 
         const now = new Date().toISOString();
 
-        // Update task status
         set((state) => ({
           tasks: state.tasks.map((t) => 
             t.id === id ? { ...t, status: 'completed' as const, completedAt: now } : t
           ),
         }));
 
-        // Add XP and coins
         addXP(task.points);
-        addCoins(Math.floor(task.points / 10)); // 10% of XP as coins
-
-        // Update pet happiness
+        addCoins(Math.floor(task.points / 10));
         updatePetHappiness(5);
 
-        // Add to logbook
         addLogEntry({
           userId: user.id,
           task: { ...task, status: 'completed', completedAt: now },
@@ -284,7 +298,6 @@ export const useGameStore = create<GameStore>()(
         
         const newTime = state.pomodoro.timeRemaining - 1;
         if (newTime <= 0) {
-          // Timer completed - will be handled by completePomodoro
           return state;
         }
         
@@ -300,7 +313,6 @@ export const useGameStore = create<GameStore>()(
           const newCompleted = pomodoro.completedPomodoros + 1;
           const isLongBreak = newCompleted % 4 === 0;
           
-          // Complete the associated task if any
           if (pomodoro.currentTaskId) {
             completeTask(pomodoro.currentTaskId);
           }
@@ -318,7 +330,6 @@ export const useGameStore = create<GameStore>()(
             },
           }));
         } else {
-          // Break completed, back to focus
           set((state) => ({
             pomodoro: {
               ...state.pomodoro,
@@ -351,21 +362,19 @@ export const useGameStore = create<GameStore>()(
 
       // XP & Leveling
       addXP: (amount) => {
-        const { user, pet, addCoins, updatePetHappiness } = get();
+        const { user, addCoins, updatePetHappiness } = get();
         if (!user) return;
 
         let newXP = user.currentXP + amount;
         let newLevel = user.level;
         let leveledUp = false;
 
-        // Check for level up
         const xpRequired = getXPForLevel(newLevel);
         while (newXP >= xpRequired) {
           newXP -= xpRequired;
           newLevel += 1;
           leveledUp = true;
           
-          // Award coins for leveling up
           const coinReward = getCoinsForLevel(newLevel);
           addCoins(coinReward);
         }
@@ -387,8 +396,10 @@ export const useGameStore = create<GameStore>()(
         } : null,
       })),
 
-      // Inventory
+      // Inventory - Slot-based system
       ownedItems: [],
+      equippedItems: {},
+      
       purchaseItem: (itemId, cost) => {
         const { user, ownedItems } = get();
         if (!user || user.totalCoins < cost || ownedItems.includes(itemId)) {
@@ -405,14 +416,18 @@ export const useGameStore = create<GameStore>()(
         return true;
       },
 
-      equipItem: (itemId) => set((state) => ({
-        pet: state.pet ? {
-          ...state.pet,
-          equippedItems: state.pet.equippedItems.includes(itemId)
-            ? state.pet.equippedItems.filter((i) => i !== itemId)
-            : [...state.pet.equippedItems, itemId],
-        } : null,
+      equipItem: (itemId, slot) => set((state) => ({
+        equippedItems: {
+          ...state.equippedItems,
+          [slot]: itemId,
+        },
       })),
+
+      unequipSlot: (slot) => set((state) => {
+        const newEquipped = { ...state.equippedItems };
+        delete newEquipped[slot];
+        return { equippedItems: newEquipped };
+      }),
     }),
     {
       name: 'anproc-game-storage',

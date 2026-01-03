@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="oceanSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9A8B;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFB88C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#87CEEB;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="water" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5BC0DE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E86AB;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Sunset Sky -->
+  <rect width="200" height="200" fill="url(#oceanSky)"/>
+  <!-- Sun setting -->
+  <circle cx="100" cy="85" r="25" fill="#FFE066"/>
+  <circle cx="100" cy="85" r="25" fill="#FF9A8B" opacity="0.4"/>
+  <!-- Water -->
+  <rect x="0" y="110" width="200" height="90" fill="url(#water)"/>
+  <!-- Sun reflection -->
+  <ellipse cx="100" cy="140" rx="15" ry="5" fill="#FFE066" opacity="0.5"/>
+  <ellipse cx="100" cy="160" rx="10" ry="3" fill="#FFE066" opacity="0.3"/>
+  <!-- Waves -->
+  <path d="M0 120 Q25 115 50 120 T100 120 T150 120 T200 120" stroke="white" stroke-width="2" fill="none" opacity="0.4"/>
+  <path d="M0 135 Q25 130 50 135 T100 135 T150 135 T200 135" stroke="white" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <path d="M0 150 Q25 145 50 150 T100 150 T150 150 T200 150" stroke="white" stroke-width="1" fill="none" opacity="0.2"/>
+  <!-- Birds -->
+  <path d="M30 45 Q35 40 40 45" stroke="#333" stroke-width="1.5" fill="none"/>
+  <path d="M50 55 Q55 50 60 55" stroke="#333" stroke-width="1.5" fill="none"/>
+  <path d="M145 50 Q150 45 155 50" stroke="#333" stroke-width="1.5" fill="none"/>
+</svg>
