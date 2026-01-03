@@ -6,6 +6,7 @@ import { PomodoroTimer } from '@/components/PomodoroTimer/PomodoroTimer';
 import { TaskManager } from '@/components/TaskManager/TaskManager';
 import { Logbook } from '@/components/Logbook/Logbook';
 import { Shop } from '@/components/Shop/Shop';
+import { Settings } from '@/components/Settings/Settings';
 import { BottomNav } from '@/components/Navigation/BottomNav';
 import { LevelUpOverlay } from '@/components/Common/LevelUpOverlay';
 import { getCoinsForLevel } from '@/utils/constants';
@@ -16,7 +17,6 @@ const Index = () => {
   const [levelUpData, setLevelUpData] = useState({ level: 1, coins: 5 });
   const prevLevelRef = useRef(user?.level || 1);
 
-  // Check for level up
   useEffect(() => {
     if (user && user.level > prevLevelRef.current) {
       setLevelUpData({
@@ -28,7 +28,6 @@ const Index = () => {
     prevLevelRef.current = user?.level || 1;
   }, [user?.level]);
 
-  // Update streak on mount
   useEffect(() => {
     if (app.isOnboarded) {
       updateStreak();
@@ -51,6 +50,8 @@ const Index = () => {
         return <Logbook />;
       case 'shop':
         return <Shop />;
+      case 'settings':
+        return <Settings />;
       default:
         return <Dashboard />;
     }

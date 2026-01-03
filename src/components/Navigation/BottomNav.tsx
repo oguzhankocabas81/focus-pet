@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Home, Timer, ListTodo, BookOpen, ShoppingBag 
+  Home, Timer, ListTodo, BookOpen, ShoppingBag, Settings 
 } from 'lucide-react';
 import { TabType } from '@/types';
 import { useGameStore } from '@/store/gameStore';
@@ -10,8 +10,8 @@ const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
   { id: 'dashboard', label: 'Home', icon: Home },
   { id: 'timer', label: 'Timer', icon: Timer },
   { id: 'tasks', label: 'Tasks', icon: ListTodo },
-  { id: 'logbook', label: 'Logbook', icon: BookOpen },
   { id: 'shop', label: 'Shop', icon: ShoppingBag },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export const BottomNav = () => {

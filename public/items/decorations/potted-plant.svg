@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 60">
+  <defs>
+    <linearGradient id="potGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#D97706;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Pot -->
+  <path d="M10 35 L15 55 L35 55 L40 35 Z" fill="url(#potGrad)"/>
+  <ellipse cx="25" cy="35" rx="15" ry="4" fill="#B45309"/>
+  <ellipse cx="25" cy="36" rx="13" ry="3" fill="#78350F"/>
+  <!-- Soil -->
+  <ellipse cx="25" cy="36" rx="11" ry="2.5" fill="#5D4037"/>
+  <!-- Plant stem -->
+  <path d="M25 36 Q25 25 22 20" stroke="#4CAF50" stroke-width="3" fill="none"/>
+  <path d="M25 36 Q25 28 28 22" stroke="#4CAF50" stroke-width="2.5" fill="none"/>
+  <!-- Leaves -->
+  <ellipse cx="18" cy="18" rx="8" ry="5" fill="#66BB6A" transform="rotate(-30 18 18)"/>
+  <ellipse cx="32" cy="20" rx="7" ry="4" fill="#81C784" transform="rotate(25 32 20)"/>
+  <ellipse cx="22" cy="12" rx="6" ry="4" fill="#A5D6A7" transform="rotate(-10 22 12)"/>
+  <ellipse cx="28" cy="10" rx="5" ry="3" fill="#C8E6C9" transform="rotate(15 28 10)"/>
+  <!-- Leaf veins -->
+  <line x1="15" y1="18" x2="21" y2="18" stroke="#2E7D32" stroke-width="0.5" opacity="0.5"/>
+  <line x1="29" y1="20" x2="35" y2="20" stroke="#2E7D32" stroke-width="0.5" opacity="0.5"/>
+</svg>

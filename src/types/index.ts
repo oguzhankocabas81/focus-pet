@@ -66,7 +66,7 @@ export interface LogbookEntry {
   timestamp: string;
 }
 
-// Shop Items
+// Shop Items (legacy - use GameItem from items.ts for new code)
 export interface ShopItem {
   id: string;
   name: string;
@@ -79,6 +79,12 @@ export interface ShopItem {
 }
 
 export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
+
+// Settings
+export interface AppSettings {
+  theme: 'light' | 'dark' | 'system';
+  language: 'en' | 'es' | 'fr' | 'de' | 'ja';
+}
 
 // Pomodoro
 export interface PomodoroState {
@@ -104,7 +110,7 @@ export interface AppState {
   currentTab: TabType;
 }
 
-export type TabType = 'dashboard' | 'timer' | 'tasks' | 'logbook' | 'shop';
+export type TabType = 'dashboard' | 'timer' | 'tasks' | 'logbook' | 'shop' | 'settings';
 
 // Quote
 export interface Quote {

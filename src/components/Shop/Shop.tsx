@@ -2,54 +2,30 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Coins, ShoppingBag, Sparkles, Image, 
-  Palette, Crown, Check, Lock
+  Crown, Check, Lock
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { EvolvingPet } from '@/components/Pet/EvolvingPet';
+import { PetScene } from '@/components/Pet/PetScene';
+import { PetRig } from '@/components/Pet/PetRig';
+import { PetBase, getEvolutionStage } from '@/components/Pet/PetBase';
 import { CoinDisplay } from '@/components/Common/CoinDisplay';
 import { useGameStore } from '@/store/gameStore';
-import { ShopItem, Rarity } from '@/types';
+import { GameItem, ItemRarity, ItemSlot } from '@/types/items';
+import { SHOP_ITEMS, getItemById } from '@/data/shopItems';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
-// Shop items data
-const SHOP_ITEMS: ShopItem[] = [
-  // Backgrounds
-  { id: 'bg-meadow', name: 'Meadow', description: 'A peaceful grassy meadow', category: 'background', rarity: 'common', cost: 75, spriteUrl: '🌾', petCompatibility: 'all' },
-  { id: 'bg-ocean', name: 'Ocean Waves', description: 'Calming ocean backdrop', category: 'background', rarity: 'common', cost: 100, spriteUrl: '🌊', petCompatibility: 'all' },
-  { id: 'bg-volcano', name: 'Volcano', description: 'A fiery volcanic landscape', category: 'background', rarity: 'rare', cost: 250, spriteUrl: '🌋', petCompatibility: 'all' },
-  { id: 'bg-forest', name: 'Enchanted Forest', description: 'Mystical woodland setting', category: 'background', rarity: 'rare', cost: 200, spriteUrl: '🌲', petCompatibility: 'all' },
-  { id: 'bg-crystal', name: 'Crystal Cave', description: 'Shimmering crystal cavern', category: 'background', rarity: 'epic', cost: 500, spriteUrl: '💎', petCompatibility: 'all' },
-  { id: 'bg-galaxy', name: 'Galaxy', description: 'Cosmic starfield', category: 'background', rarity: 'legendary', cost: 1000, spriteUrl: '🌌', petCompatibility: 'all' },
-  
-  // Accessories
-  { id: 'acc-bow', name: 'Cute Bow', description: 'A stylish bow', category: 'accessory', rarity: 'common', cost: 50, spriteUrl: '🎀', petCompatibility: 'all' },
-  { id: 'acc-glasses', name: 'Cool Glasses', description: 'Looking sharp!', category: 'accessory', rarity: 'common', cost: 75, spriteUrl: '🕶️', petCompatibility: 'all' },
-  { id: 'acc-hat', name: 'Top Hat', description: 'Fancy headwear', category: 'accessory', rarity: 'rare', cost: 175, spriteUrl: '🎩', petCompatibility: 'all' },
-  { id: 'acc-crown', name: 'Royal Crown', description: 'Fit for royalty', category: 'accessory', rarity: 'epic', cost: 600, spriteUrl: '👑', petCompatibility: 'all' },
-  { id: 'acc-halo', name: 'Halo', description: 'Angelic glow', category: 'accessory', rarity: 'legendary', cost: 1200, spriteUrl: '😇', petCompatibility: 'all' },
-  
-  // Decorations
-  { id: 'dec-sparkle', name: 'Sparkles', description: 'Shiny particles', category: 'decoration', rarity: 'common', cost: 60, spriteUrl: '✨', petCompatibility: 'all' },
-  { id: 'dec-hearts', name: 'Love Hearts', description: 'Floating hearts', category: 'decoration', rarity: 'common', cost: 80, spriteUrl: '💕', petCompatibility: 'all' },
-  { id: 'dec-stars', name: 'Star Trail', description: 'Trailing stars', category: 'decoration', rarity: 'rare', cost: 225, spriteUrl: '⭐', petCompatibility: 'all' },
-  { id: 'dec-rainbow', name: 'Rainbow Aura', description: 'Colorful aura', category: 'decoration', rarity: 'epic', cost: 450, spriteUrl: '🌈', petCompatibility: 'all' },
-  { id: 'dec-fire', name: 'Fire Aura', description: 'Blazing flames', category: 'decoration', rarity: 'epic', cost: 550, spriteUrl: '🔥', petCompatibility: ['fire'] },
-  { id: 'dec-water', name: 'Water Aura', description: 'Flowing water', category: 'decoration', rarity: 'epic', cost: 550, spriteUrl: '💧', petCompatibility: ['water'] },
-  { id: 'dec-leaf', name: 'Leaf Aura', description: 'Floating leaves', category: 'decoration', rarity: 'epic', cost: 550, spriteUrl: '🍃', petCompatibility: ['grass'] },
-];
-
-const RARITY_COLORS: Record<Rarity, string> = {
+const RARITY_COLORS: Record<ItemRarity, string> = {
   common: 'bg-muted text-muted-foreground',
   rare: 'bg-blue-500/20 text-blue-500',
   epic: 'bg-purple-500/20 text-purple-500',
   legendary: 'bg-amber-500/20 text-amber-500',
 };
 
-const RARITY_BORDERS: Record<Rarity, string> = {
+const RARITY_BORDERS: Record<ItemRarity, string> = {
   common: 'border-muted',
   rare: 'border-blue-500/50',
   epic: 'border-purple-500/50',
@@ -57,33 +33,48 @@ const RARITY_BORDERS: Record<Rarity, string> = {
 };
 
 export const Shop = () => {
-  const { user, pet, ownedItems, purchaseItem, equipItem } = useGameStore();
+  const { user, pet, ownedItems, equippedItems, purchaseItem, equipItem, unequipSlot } = useGameStore();
   const { toast } = useToast();
-  const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<GameItem | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [previewEquipped, setPreviewEquipped] = useState(equippedItems);
 
-  const handlePurchase = (item: ShopItem) => {
-    if (!user) return;
+  const handleItemClick = (item: GameItem) => {
+    const isOwned = ownedItems.includes(item.id);
 
-    if (ownedItems.includes(item.id)) {
-      // Toggle equip
-      equipItem(item.id);
-      toast({ 
-        title: pet?.equippedItems.includes(item.id) ? "Item unequipped" : "Item equipped! ✨" 
-      });
+    if (isOwned) {
+      // Toggle equip/unequip
+      const isCurrentlyEquipped = equippedItems[item.slot] === item.id;
+      
+      if (isCurrentlyEquipped) {
+        unequipSlot(item.slot);
+        setPreviewEquipped(prev => {
+          const newState = { ...prev };
+          delete newState[item.slot];
+          return newState;
+        });
+        toast({ title: "Item unequipped" });
+      } else {
+        equipItem(item.id, item.slot);
+        setPreviewEquipped(prev => ({ ...prev, [item.slot]: item.id }));
+        toast({ title: "Item equipped!" });
+      }
       return;
     }
 
-    if (user.totalCoins < item.cost) {
+    // Not owned - show purchase dialog
+    if (!user || user.totalCoins < item.cost) {
       toast({ 
         title: "Not enough coins", 
-        description: `You need ${item.cost - user.totalCoins} more coins`,
+        description: `You need ${item.cost - (user?.totalCoins || 0)} more coins`,
         variant: "destructive" 
       });
       return;
     }
 
     setSelectedItem(item);
+    // Show preview
+    setPreviewEquipped(prev => ({ ...prev, [item.slot]: item.id }));
     setShowConfirmDialog(true);
   };
 
@@ -92,9 +83,9 @@ export const Shop = () => {
 
     const success = purchaseItem(selectedItem.id, selectedItem.cost);
     if (success) {
-      equipItem(selectedItem.id);
+      equipItem(selectedItem.id, selectedItem.slot);
       toast({ 
-        title: "Item purchased! 🎉", 
+        title: "Item purchased!", 
         description: `${selectedItem.name} has been equipped` 
       });
     }
@@ -102,7 +93,14 @@ export const Shop = () => {
     setSelectedItem(null);
   };
 
-  const getItemsByCategory = (category: ShopItem['category']) => {
+  const cancelPurchase = () => {
+    // Reset preview
+    setPreviewEquipped(equippedItems);
+    setShowConfirmDialog(false);
+    setSelectedItem(null);
+  };
+
+  const getItemsByCategory = (category: GameItem['category']) => {
     return SHOP_ITEMS.filter(item => {
       if (item.category !== category) return false;
       if (item.petCompatibility === 'all') return true;
@@ -110,12 +108,12 @@ export const Shop = () => {
     });
   };
 
-  const renderItemGrid = (items: ShopItem[]) => (
+  const renderItemGrid = (items: GameItem[]) => (
     <div className="grid grid-cols-2 gap-3">
       <AnimatePresence>
         {items.map((item, index) => {
           const isOwned = ownedItems.includes(item.id);
-          const isEquipped = pet?.equippedItems.includes(item.id);
+          const isEquipped = equippedItems[item.slot] === item.id;
           const canAfford = user && user.totalCoins >= item.cost;
 
           return (
@@ -131,10 +129,16 @@ export const Shop = () => {
                   RARITY_BORDERS[item.rarity],
                   isEquipped && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
                 )}
-                onClick={() => handlePurchase(item)}
+                onClick={() => handleItemClick(item)}
               >
-                {/* Sprite */}
-                <div className="text-4xl mb-2 text-center">{item.spriteUrl}</div>
+                {/* Thumbnail */}
+                <div className="w-full h-16 mb-2 flex items-center justify-center">
+                  <img 
+                    src={item.thumbnailPath} 
+                    alt={item.name}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
 
                 {/* Name & Rarity */}
                 <h3 className="font-medium text-sm text-foreground text-center mb-1">
@@ -200,7 +204,7 @@ export const Shop = () => {
           <CoinDisplay amount={user?.totalCoins || 0} size="lg" />
         </motion.div>
 
-        {/* Pet Preview */}
+        {/* Pet Preview with Scene */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -209,7 +213,18 @@ export const Shop = () => {
           <Card className="p-6 mb-6 bg-gradient-to-br from-primary/10 via-background to-accent/10 overflow-hidden">
             <div className="flex items-center justify-center">
               {pet && user && (
-                <EvolvingPet type={pet.type} level={user.level} size="xl" showEquipment={true} />
+                <PetScene 
+                  equippedItems={previewEquipped} 
+                  petSize="xl"
+                >
+                  <PetRig equippedItems={previewEquipped} size="xl">
+                    <PetBase 
+                      type={pet.type} 
+                      stage={getEvolutionStage(user.level)} 
+                      size="xl"
+                    />
+                  </PetRig>
+                </PetScene>
               )}
             </div>
             <p className="text-center text-sm text-muted-foreground mt-3">
@@ -247,7 +262,7 @@ export const Shop = () => {
         </Tabs>
 
         {/* Purchase Confirmation */}
-        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <Dialog open={showConfirmDialog} onOpenChange={(open) => !open && cancelPurchase()}>
           <DialogContent className="max-w-sm mx-4 rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-center">Confirm Purchase</DialogTitle>
@@ -255,7 +270,13 @@ export const Shop = () => {
 
             {selectedItem && (
               <div className="text-center py-4">
-                <div className="text-6xl mb-4">{selectedItem.spriteUrl}</div>
+                <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                  <img 
+                    src={selectedItem.assetPath}
+                    alt={selectedItem.name}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
                 <h3 className="font-bold text-lg text-foreground mb-1">
                   {selectedItem.name}
                 </h3>
@@ -271,7 +292,7 @@ export const Shop = () => {
                   <Button 
                     variant="outline" 
                     className="flex-1"
-                    onClick={() => setShowConfirmDialog(false)}
+                    onClick={cancelPurchase}
                   >
                     Cancel
                   </Button>

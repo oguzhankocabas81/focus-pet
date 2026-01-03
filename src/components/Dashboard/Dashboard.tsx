@@ -3,7 +3,9 @@ import { motion } from 'framer-motion';
 import { Plus, ChevronRight, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { EvolvingPet, EVOLUTION_NAMES, getEvolutionStage } from '@/components/Pet/EvolvingPet';
+import { PetScene } from '@/components/Pet/PetScene';
+import { PetRig } from '@/components/Pet/PetRig';
+import { PetBase, EVOLUTION_NAMES, getEvolutionStage } from '@/components/Pet/PetBase';
 import { XPBar } from '@/components/Common/XPBar';
 import { CoinDisplay } from '@/components/Common/CoinDisplay';
 import { StreakBadge } from '@/components/Common/StreakBadge';
@@ -15,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { format, isToday, parseISO } from 'date-fns';
 
 export const Dashboard = () => {
-  const { user, pet, tasks, setCurrentTab, updateStreak, startFocusTask, completeTask } = useGameStore();
+  const { user, pet, tasks, setCurrentTab, updateStreak, startFocusTask, completeTask, equippedItems } = useGameStore();
   const [quote, setQuote] = useState<Quote>(FALLBACK_QUOTES[0]);
 
   useEffect(() => {
@@ -67,7 +69,11 @@ export const Dashboard = () => {
         >
           <Card className="relative overflow-hidden p-6 bg-gradient-to-br from-card via-card to-primary/5">
             <div className="flex flex-col items-center text-center">
-              <EvolvingPet type={pet.type} level={user.level} size="xl" showEquipment={true} />
+              <PetScene equippedItems={equippedItems} petSize="xl">
+                <PetRig equippedItems={equippedItems} size="xl">
+                  <PetBase type={pet.type} stage={getEvolutionStage(user.level)} size="xl" />
+                </PetRig>
+              </PetScene>
               <h3 className="mt-3 font-pixel text-sm text-foreground">{pet.name}</h3>
               <p className="text-xs text-muted-foreground">
                 {EVOLUTION_NAMES[pet.type][getEvolutionStage(user.level)].name}
