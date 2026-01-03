@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -7,29 +10,29 @@
 @layer base {
   :root {
     /* Core palette - Playful gaming meets productivity */
-    --background: 210 20% 98%;
-    --foreground: 220 25% 10%;
+    --background: 0 0% 96%;
+    --foreground: 0 0% 9%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 9%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
+    --popover: 0 0% 89%;
+    --popover-foreground: 0 0% 9%;
 
     /* Cyan primary - energetic, focused */
-    --primary: 187 72% 37%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 20 90% 48%;
+    --primary-foreground: 33 100% 96%;
 
     /* Soft lavender secondary */
-    --secondary: 250 60% 95%;
-    --secondary-foreground: 250 50% 40%;
+    --secondary: 0 0% 32%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 210 20% 94%;
-    --muted-foreground: 220 15% 45%;
+    --muted: 0 0% 63%;
+    --muted-foreground: 0 0% 9%;
 
     /* Purple accent for gamification */
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 47 100% 96%;
+    --accent-foreground: 37 92% 50%;
 
     /* Task types */
     --focus: 210 100% 50%;
@@ -44,8 +47,8 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 85% 97%;
 
     /* XP & Coins */
     --xp: 262 83% 58%;
@@ -58,10 +61,10 @@
     --water: 200 85% 50%;
     --grass: 130 60% 45%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 187 72% 37%;
-    --radius: 1rem;
+    --border: 0 0% 83%;
+    --input: 0 0% 83%;
+    --ring: 20 90% 48%;
+    --radius: 0.75rem;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(187 72% 37%) 0%, hsl(200 85% 50%) 100%);
@@ -73,9 +76,9 @@
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
 
     /* Shadows */
-    --shadow-sm: 0 2px 8px hsl(220 25% 10% / 0.06);
-    --shadow-md: 0 4px 16px hsl(220 25% 10% / 0.08);
-    --shadow-lg: 0 8px 32px hsl(220 25% 10% / 0.12);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
     --shadow-glow: 0 0 20px hsl(187 72% 37% / 0.3);
     --shadow-xp: 0 0 20px hsl(262 83% 58% / 0.4);
     --shadow-coin: 0 0 16px hsl(45 93% 47% / 0.5);
@@ -83,38 +86,81 @@
     /* Navigation */
     --nav-height: 5rem;
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --chart-1: 27 95% 60%;
+    --chart-2: 43 96% 56%;
+    --chart-3: 47 95% 53%;
+    --chart-4: 24 94% 53%;
+    --chart-5: 0 0% 45%;
+    --sidebar: 0 0% 98%;
+    --sidebar-foreground: 0 0% 9%;
+    --sidebar-primary: 20 90% 48%;
+    --sidebar-primary-foreground: 33 100% 96%;
+    --sidebar-accent: 0 0% 32%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 83%;
+    --sidebar-ring: 20 90% 48%;
+    --font-sans: 'Roboto', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    --font-serif: 'Libre Caslon Text', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    --tracking-normal: 0em;
+    --spacing: 0.25rem;
   }
 
   .dark {
-    --background: 225 25% 8%;
-    --foreground: 210 20% 95%;
+    --background: 0 0% 9%;
+    --foreground: 0 0% 98%;
 
-    --card: 225 25% 12%;
-    --card-foreground: 210 20% 95%;
+    --card: 0 0% 14%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 225 25% 12%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 0 0% 25%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 187 72% 45%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 27 95% 60%;
+    --primary-foreground: 12 81% 14%;
 
-    --secondary: 250 30% 20%;
-    --secondary-foreground: 250 60% 80%;
+    --secondary: 0 0% 45%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 225 20% 18%;
-    --muted-foreground: 220 15% 60%;
+    --muted: 0 0% 45%;
+    --muted-foreground: 0 0% 98%;
 
-    --accent: 262 83% 65%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 20 91% 14%;
+    --accent-foreground: 43 96% 56%;
 
-    --border: 225 20% 20%;
-    --input: 225 20% 20%;
-    --ring: 187 72% 45%;
+    --border: 0 0% 32%;
+    --input: 0 0% 32%;
+    --ring: 27 95% 60%;
 
     --gradient-card: linear-gradient(180deg, hsl(225 25% 14%) 0%, hsl(225 25% 10%) 100%);
-    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.2);
-    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.25);
-    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.35);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 85% 97%;
+    --chart-1: 30 97% 72%;
+    --chart-2: 45 96% 64%;
+    --chart-3: 48 96% 76%;
+    --chart-4: 27 95% 60%;
+    --chart-5: 0 0% 45%;
+    --sidebar: 0 0% 14%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 27 95% 60%;
+    --sidebar-primary-foreground: 12 81% 14%;
+    --sidebar-accent: 43 96% 56%;
+    --sidebar-accent-foreground: 20 91% 14%;
+    --sidebar-border: 0 0% 32%;
+    --sidebar-ring: 27 95% 60%;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   }
 }
 
