@@ -42,9 +42,9 @@ export const SHOP_ITEMS: GameItem[] = [
     petCompatibility: 'all',
     anchor: 'head',
     offsetX: 0,
-    offsetY: -45,
+    offsetY: -8,  // Sits on top of head
     scale: 1,
-    zIndex: 10,
+    zIndex: 20,
   },
   {
     id: 'acc-wizard-hat',
@@ -59,9 +59,9 @@ export const SHOP_ITEMS: GameItem[] = [
     petCompatibility: 'all',
     anchor: 'head',
     offsetX: 0,
-    offsetY: -50,
-    scale: 1.1,
-    zIndex: 10,
+    offsetY: -10, // Sits on top of head
+    scale: 1.2,
+    zIndex: 20,
   },
   {
     id: 'acc-cool-glasses',
@@ -76,9 +76,9 @@ export const SHOP_ITEMS: GameItem[] = [
     petCompatibility: 'all',
     anchor: 'face',
     offsetX: 0,
-    offsetY: -8,
-    scale: 0.9,
-    zIndex: 11,
+    offsetY: 0,   // Sits at face level
+    scale: 0.8,
+    zIndex: 21,   // Above head items
   },
 
   // ========== DECORATIONS ==========
