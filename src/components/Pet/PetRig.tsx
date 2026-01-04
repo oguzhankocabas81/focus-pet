@@ -12,20 +12,29 @@ interface PetRigProps {
   className?: string;
 }
 
-// Size-based scaling for accessories
-const SIZE_SCALES = {
-  sm: 0.5,
-  md: 0.7,
-  lg: 0.9,
-  xl: 1.1,
+// Size-based dimensions for precise positioning
+const SIZE_DIMENSIONS = {
+  sm: { width: 64, height: 64 },
+  md: { width: 80, height: 80 },
+  lg: { width: 96, height: 96 },
+  xl: { width: 128, height: 128 },
 };
 
-// Anchor positions relative to pet center (in percentages)
+// Anchor positions as percentage of pet container (from top-left)
+// These define WHERE on the pet the accessory attaches
 const ANCHOR_POSITIONS: Record<AnchorPoint, { x: number; y: number }> = {
-  head: { x: 50, y: 5 },    // Top center
-  face: { x: 50, y: 35 },   // Upper middle
-  neck: { x: 50, y: 55 },   // Lower middle
-  body: { x: 50, y: 70 },   // Lower area
+  head: { x: 50, y: 0 },      // Top center - for hats
+  face: { x: 50, y: 35 },     // Upper face - for glasses
+  neck: { x: 50, y: 60 },     // Neck area - for collars
+  body: { x: 50, y: 75 },     // Body center - for outfits
+};
+
+// Accessory size multipliers based on container size
+const ACCESSORY_SIZE = {
+  sm: 28,
+  md: 36,
+  lg: 44,
+  xl: 56,
 };
 
 export const PetRig = ({
@@ -35,71 +44,76 @@ export const PetRig = ({
   children,
   className,
 }: PetRigProps) => {
-  const sizeScale = SIZE_SCALES[size];
+  const dimensions = SIZE_DIMENSIONS[size];
+  const accessorySize = ACCESSORY_SIZE[size];
   
-  // Get accessory items
-  const accessories: Array<{ item: ReturnType<typeof getItemById>; slot: keyof EquippedItems }> = [];
+  // Get accessory items that should be worn on the pet
+  const accessories: Array<{ 
+    item: NonNullable<ReturnType<typeof getItemById>>; 
+    slot: keyof EquippedItems 
+  }> = [];
   
   if (equippedItems.hat) {
     const item = getItemById(equippedItems.hat);
-    if (item) accessories.push({ item, slot: 'hat' });
+    if (item && item.anchor) accessories.push({ item, slot: 'hat' });
   }
   if (equippedItems.glasses) {
     const item = getItemById(equippedItems.glasses);
-    if (item) accessories.push({ item, slot: 'glasses' });
+    if (item && item.anchor) accessories.push({ item, slot: 'glasses' });
   }
   if (equippedItems.neck) {
     const item = getItemById(equippedItems.neck);
-    if (item) accessories.push({ item, slot: 'neck' });
+    if (item && item.anchor) accessories.push({ item, slot: 'neck' });
   }
   if (equippedItems.outfit) {
     const item = getItemById(equippedItems.outfit);
-    if (item) accessories.push({ item, slot: 'outfit' });
+    if (item && item.anchor) accessories.push({ item, slot: 'outfit' });
   }
+
+  // Sort by zIndex so lower items render first
+  accessories.sort((a, b) => (a.item.zIndex || 10) - (b.item.zIndex || 10));
 
   return (
     <motion.div
       className={cn('relative', className)}
-      animate={isAnimated ? { y: [0, -6, 0] } : undefined}
-      transition={isAnimated ? { duration: 2, repeat: Infinity, ease: 'easeInOut' as const } : undefined}
+      style={{ width: dimensions.width, height: dimensions.height }}
+      animate={isAnimated ? { y: [0, -8, 0] } : undefined}
+      transition={isAnimated ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } : undefined}
     >
-      {/* Pet base */}
-      <div className="relative">
+      {/* Pet base - centered in container */}
+      <div className="absolute inset-0 flex items-center justify-center">
         {children}
       </div>
 
-      {/* Accessories layer - positioned absolutely on top of pet */}
+      {/* Accessories layer - positioned on top of pet using anchor points */}
       {accessories.map(({ item }) => {
-        if (!item || !item.anchor) return null;
-
-        const anchor = ANCHOR_POSITIONS[item.anchor];
-        const offsetX = (item.offsetX || 0) * sizeScale;
-        const offsetY = (item.offsetY || 0) * sizeScale;
-        const scale = (item.scale || 1) * sizeScale;
+        const anchor = ANCHOR_POSITIONS[item.anchor!];
+        const offsetX = item.offsetX || 0;
+        const offsetY = item.offsetY || 0;
+        const itemScale = item.scale || 1;
         const rotation = item.rotation || 0;
+        const finalSize = accessorySize * itemScale;
 
         return (
-          <motion.div
+          <motion.img
             key={item.id}
+            src={item.assetPath}
+            alt={item.name}
             className="absolute pointer-events-none"
             style={{
-              left: `${anchor.x}%`,
-              top: `${anchor.y}%`,
-              transform: `translate(-50%, -50%) translate(${offsetX}px, ${offsetY}px) scale(${scale}) rotate(${rotation}deg)`,
+              width: finalSize,
+              height: finalSize,
+              // Position at anchor point, then offset by half the accessory size to center it
+              left: `calc(${anchor.x}% + ${offsetX}px - ${finalSize / 2}px)`,
+              top: `calc(${anchor.y}% + ${offsetY}px - ${finalSize / 2}px)`,
+              transform: `rotate(${rotation}deg)`,
               zIndex: item.zIndex || 10,
-              width: 60 * sizeScale,
-              height: 60 * sizeScale,
+              objectFit: 'contain',
             }}
             initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          >
-            <img
-              src={item.assetPath}
-              alt={item.name}
-              className="w-full h-full object-contain"
-            />
-          </motion.div>
+          />
         );
       })}
     </motion.div>
