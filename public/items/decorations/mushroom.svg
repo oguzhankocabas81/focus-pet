@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 45">
+  <defs>
+    <linearGradient id="capGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F44336"/>
+      <stop offset="100%" style="stop-color:#C62828"/>
+    </linearGradient>
+  </defs>
+  <!-- Stem -->
+  <path d="M15,25 L14,42 Q20,45 26,42 L25,25" fill="#FFECB3"/>
+  <path d="M16,28 L15,40 Q20,42 25,40 L24,28" fill="#FFE082"/>
+  <!-- Cap -->
+  <ellipse cx="20" cy="22" rx="18" ry="12" fill="url(#capGrad)"/>
+  <!-- White spots -->
+  <circle cx="12" cy="18" r="3" fill="white"/>
+  <circle cx="25" cy="15" r="4" fill="white"/>
+  <circle cx="18" cy="24" r="2.5" fill="white"/>
+  <circle cx="28" cy="22" r="2" fill="white"/>
+  <!-- Highlight -->
+  <ellipse cx="15" cy="15" rx="5" ry="3" fill="white" opacity="0.3"/>
+</svg>

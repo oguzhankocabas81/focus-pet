@@ -38,6 +38,24 @@ export const Shop = () => {
   const [selectedItem, setSelectedItem] = useState<GameItem | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [previewEquipped, setPreviewEquipped] = useState(equippedItems);
+  const [tryOnItem, setTryOnItem] = useState<GameItem | null>(null);
+
+  // Sync preview with actual equipped when equippedItems changes
+  const currentPreview = tryOnItem 
+    ? { ...equippedItems, [tryOnItem.slot]: tryOnItem.id }
+    : previewEquipped;
+
+  const handleTryOn = (item: GameItem) => {
+    const isOwned = ownedItems.includes(item.id);
+    if (!isOwned) {
+      // Preview without buying
+      setTryOnItem(item);
+    }
+  };
+
+  const clearTryOn = () => {
+    setTryOnItem(null);
+  };
 
   const handleItemClick = (item: GameItem) => {
     const isOwned = ownedItems.includes(item.id);
@@ -59,6 +77,7 @@ export const Shop = () => {
         setPreviewEquipped(prev => ({ ...prev, [item.slot]: item.id }));
         toast({ title: "Item equipped!" });
       }
+      setTryOnItem(null);
       return;
     }
 
@@ -73,8 +92,7 @@ export const Shop = () => {
     }
 
     setSelectedItem(item);
-    // Show preview
-    setPreviewEquipped(prev => ({ ...prev, [item.slot]: item.id }));
+    setTryOnItem(item);
     setShowConfirmDialog(true);
   };
 
@@ -84,6 +102,7 @@ export const Shop = () => {
     const success = purchaseItem(selectedItem.id, selectedItem.cost);
     if (success) {
       equipItem(selectedItem.id, selectedItem.slot);
+      setPreviewEquipped(prev => ({ ...prev, [selectedItem.slot]: selectedItem.id }));
       toast({ 
         title: "Item purchased!", 
         description: `${selectedItem.name} has been equipped` 
@@ -91,16 +110,17 @@ export const Shop = () => {
     }
     setShowConfirmDialog(false);
     setSelectedItem(null);
+    setTryOnItem(null);
   };
 
   const cancelPurchase = () => {
-    // Reset preview
     setPreviewEquipped(equippedItems);
     setShowConfirmDialog(false);
     setSelectedItem(null);
+    setTryOnItem(null);
   };
 
-  const getItemsByCategory = (category: GameItem['category']) => {
+  const getItemsByCat = (category: GameItem['category']) => {
     return SHOP_ITEMS.filter(item => {
       if (item.category !== category) return false;
       if (item.petCompatibility === 'all') return true;
@@ -114,6 +134,7 @@ export const Shop = () => {
         {items.map((item, index) => {
           const isOwned = ownedItems.includes(item.id);
           const isEquipped = equippedItems[item.slot] === item.id;
+          const isTryingOn = tryOnItem?.id === item.id;
           const canAfford = user && user.totalCoins >= item.cost;
 
           return (
@@ -125,14 +146,24 @@ export const Shop = () => {
             >
               <Card 
                 className={cn(
-                  'p-4 cursor-pointer transition-all hover:shadow-lg border-2',
+                  'p-3 cursor-pointer transition-all hover:shadow-lg border-2 relative',
                   RARITY_BORDERS[item.rarity],
-                  isEquipped && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
+                  isEquipped && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
+                  isTryingOn && !isOwned && 'ring-2 ring-amber-400 ring-offset-2 ring-offset-background'
                 )}
                 onClick={() => handleItemClick(item)}
+                onMouseEnter={() => handleTryOn(item)}
+                onMouseLeave={clearTryOn}
               >
+                {/* Try-on badge */}
+                {isTryingOn && !isOwned && (
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
+                    Try On
+                  </div>
+                )}
+
                 {/* Thumbnail */}
-                <div className="w-full h-16 mb-2 flex items-center justify-center">
+                <div className="w-full h-14 mb-2 flex items-center justify-center">
                   <img 
                     src={item.thumbnailPath} 
                     alt={item.name}
@@ -141,12 +172,12 @@ export const Shop = () => {
                 </div>
 
                 {/* Name & Rarity */}
-                <h3 className="font-medium text-sm text-foreground text-center mb-1">
+                <h3 className="font-medium text-xs text-foreground text-center mb-1 truncate">
                   {item.name}
                 </h3>
-                <div className="flex justify-center mb-2">
+                <div className="flex justify-center mb-1">
                   <span className={cn(
-                    'text-[10px] font-medium uppercase px-2 py-0.5 rounded-full',
+                    'text-[9px] font-medium uppercase px-1.5 py-0.5 rounded-full',
                     RARITY_COLORS[item.rarity]
                   )}>
                     {item.rarity}
@@ -171,7 +202,7 @@ export const Shop = () => {
                     </div>
                   ) : (
                     <div className={cn(
-                      'flex items-center justify-center gap-1 text-sm font-bold',
+                      'flex items-center justify-center gap-1 text-xs font-bold',
                       canAfford ? 'text-coin' : 'text-muted-foreground'
                     )}>
                       {!canAfford && <Lock className="w-3 h-3" />}
@@ -204,20 +235,33 @@ export const Shop = () => {
           <CoinDisplay amount={user?.totalCoins || 0} size="lg" />
         </motion.div>
 
-        {/* Pet Preview with Scene */}
+        {/* Pet Preview Panel */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="p-6 mb-6 bg-gradient-to-br from-primary/10 via-background to-accent/10 overflow-hidden">
+          <Card className="p-4 mb-6 bg-gradient-to-br from-primary/10 via-background to-accent/10 overflow-hidden relative">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-muted-foreground">Preview</span>
+              {tryOnItem && (
+                <motion.span 
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="text-xs font-medium text-amber-500 flex items-center gap-1"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Trying: {tryOnItem.name}
+                </motion.span>
+              )}
+            </div>
             <div className="flex items-center justify-center">
               {pet && user && (
                 <PetScene 
-                  equippedItems={previewEquipped} 
+                  equippedItems={currentPreview} 
                   petSize="xl"
                 >
-                  <PetRig equippedItems={previewEquipped} size="xl">
+                  <PetRig equippedItems={currentPreview} size="xl">
                     <PetBase 
                       type={pet.type} 
                       stage={getEvolutionStage(user.level)} 
@@ -227,7 +271,7 @@ export const Shop = () => {
                 </PetScene>
               )}
             </div>
-            <p className="text-center text-sm text-muted-foreground mt-3">
+            <p className="text-center text-sm text-muted-foreground mt-2">
               {pet?.name} • Level {user?.level}
             </p>
           </Card>
@@ -246,18 +290,18 @@ export const Shop = () => {
             </TabsTrigger>
             <TabsTrigger value="decoration" className="text-xs">
               <Sparkles className="w-4 h-4 mr-1" />
-              Decorations
+              Decor
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="background">
-            {renderItemGrid(getItemsByCategory('background'))}
+            {renderItemGrid(getItemsByCat('background'))}
           </TabsContent>
           <TabsContent value="accessory">
-            {renderItemGrid(getItemsByCategory('accessory'))}
+            {renderItemGrid(getItemsByCat('accessory'))}
           </TabsContent>
           <TabsContent value="decoration">
-            {renderItemGrid(getItemsByCategory('decoration'))}
+            {renderItemGrid(getItemsByCat('decoration'))}
           </TabsContent>
         </Tabs>
 
