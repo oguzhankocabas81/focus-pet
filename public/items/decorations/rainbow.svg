@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 50">
+  <!-- Rainbow arcs -->
+  <path d="M5,45 A35,35 0 0,1 75,45" stroke="#E53935" stroke-width="4" fill="none"/>
+  <path d="M9,45 A31,31 0 0,1 71,45" stroke="#FF9800" stroke-width="4" fill="none"/>
+  <path d="M13,45 A27,27 0 0,1 67,45" stroke="#FFEB3B" stroke-width="4" fill="none"/>
+  <path d="M17,45 A23,23 0 0,1 63,45" stroke="#4CAF50" stroke-width="4" fill="none"/>
+  <path d="M21,45 A19,19 0 0,1 59,45" stroke="#2196F3" stroke-width="4" fill="none"/>
+  <path d="M25,45 A15,15 0 0,1 55,45" stroke="#9C27B0" stroke-width="4" fill="none"/>
+  <!-- Clouds -->
+  <ellipse cx="10" cy="45" rx="10" ry="8" fill="white"/>
+  <ellipse cx="70" cy="45" rx="10" ry="8" fill="white"/>
+  <ellipse cx="5" cy="43" rx="6" ry="5" fill="white"/>
+  <ellipse cx="75" cy="43" rx="6" ry="5" fill="white"/>
+</svg>

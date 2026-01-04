@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 50">
+  <defs>
+    <linearGradient id="capeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E53935"/>
+      <stop offset="100%" style="stop-color:#B71C1C"/>
+    </linearGradient>
+  </defs>
+  <!-- Cape body -->
+  <path d="M10,5 Q5,25 15,48 L30,40 L45,48 Q55,25 50,5 Q30,0 10,5" fill="url(#capeGrad)"/>
+  <!-- Cape collar -->
+  <ellipse cx="30" cy="5" rx="22" ry="6" fill="#C62828"/>
+  <!-- Inner shadow -->
+  <path d="M15,10 Q12,30 20,45 L30,38 L40,45 Q48,30 45,10" fill="#B71C1C" opacity="0.5"/>
+  <!-- Gold clasp -->
+  <circle cx="30" cy="5" r="4" fill="#FFD54F"/>
+  <circle cx="30" cy="5" r="2.5" fill="#FFC107"/>
+</svg>
