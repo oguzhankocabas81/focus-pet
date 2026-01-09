@@ -8,13 +8,12 @@ import { PetRig } from '@/components/Pet/PetRig';
 import { PetBase, EVOLUTION_NAMES, getEvolutionStage } from '@/components/Pet/PetBase';
 import { XPBar } from '@/components/Common/XPBar';
 import { CoinDisplay } from '@/components/Common/CoinDisplay';
-import { StreakBadge } from '@/components/Common/StreakBadge';
 import { TaskBadge } from '@/components/Common/TaskBadge';
 import { useGameStore } from '@/store/gameStore';
 import { getXPForLevel, FALLBACK_QUOTES } from '@/utils/constants';
 import { Task, Quote } from '@/types';
 import { cn } from '@/lib/utils';
-import { format, isToday, parseISO } from 'date-fns';
+import { isToday, parseISO } from 'date-fns';
 
 export const Dashboard = () => {
   const { user, pet, tasks, setCurrentTab, updateStreak, startFocusTask, completeTask, equippedItems } = useGameStore();
@@ -22,7 +21,6 @@ export const Dashboard = () => {
 
   useEffect(() => {
     updateStreak();
-    // Get random quote
     const randomQuote = FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
     setQuote(randomQuote);
   }, []);
@@ -44,59 +42,60 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6">
-      <div className="max-w-lg mx-auto space-y-6">
-        {/* Header with greeting and coins */}
+    <div className="min-h-screen pb-24 px-4 pt-6 bg-background">
+      <div className="max-w-lg mx-auto space-y-5">
+        {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between"
         >
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Hey, {user.name}! 👋
-            </h1>
-            <p className="text-muted-foreground text-sm">Ready to be productive?</p>
-          </div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Hey, {user.name}!
+          </h1>
           <CoinDisplay amount={user.totalCoins} size="lg" />
         </motion.div>
 
-        {/* Pet Card */}
+        {/* Pet Card - Clean white card with pet on pedestal */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="relative overflow-hidden p-6 bg-gradient-to-br from-card via-card to-primary/5">
+          <Card className="relative overflow-hidden p-6 bg-card shadow-lg rounded-3xl border-0">
             <div className="flex flex-col items-center text-center">
-              <PetScene equippedItems={equippedItems} petSize="xl">
-                <PetRig equippedItems={equippedItems} size="xl">
-                  <PetBase type={pet.type} stage={getEvolutionStage(user.level)} size="xl" />
-                </PetRig>
-              </PetScene>
-              <h3 className="mt-3 font-pixel text-sm text-foreground">{pet.name}</h3>
+              {/* Pet with Scene */}
+              <div className="relative">
+                <PetScene equippedItems={equippedItems} petSize="xl" showDecorations={false}>
+                  <PetRig equippedItems={equippedItems} size="xl">
+                    <PetBase type={pet.type} stage={getEvolutionStage(user.level)} size="xl" />
+                  </PetRig>
+                </PetScene>
+                
+                {/* Pedestal/Platform */}
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-24 h-6">
+                  <div className="w-full h-full bg-gradient-to-b from-amber-200 via-amber-300 to-amber-400 rounded-full shadow-md" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-3 bg-gradient-to-b from-amber-100 to-amber-200 rounded-full" />
+                </div>
+              </div>
+
+              {/* Pet Name */}
+              <h3 className="mt-4 text-lg font-semibold text-foreground">{pet.name}</h3>
               <p className="text-xs text-muted-foreground">
                 {EVOLUTION_NAMES[pet.type][getEvolutionStage(user.level)].name}
               </p>
-              
-              {/* Pet stats */}
-              <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                <span>❤️ {pet.happiness}%</span>
-                <span>🍖 {100 - pet.hunger}%</span>
-              </div>
 
-              {/* XP Bar */}
-              <div className="w-full mt-4">
+              {/* Level & XP Bar */}
+              <div className="w-full mt-4 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-foreground">Level {user.level}</span>
+                  <span className="text-muted-foreground">XP</span>
+                </div>
                 <XPBar 
                   current={user.currentXP} 
                   max={xpRequired} 
                   level={user.level}
                 />
-              </div>
-
-              {/* Streak */}
-              <div className="mt-4">
-                <StreakBadge streak={user.dailyStreak} />
               </div>
             </div>
           </Card>
@@ -109,12 +108,12 @@ export const Dashboard = () => {
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-foreground">Today's Tasks</h2>
+            <h2 className="text-lg font-semibold text-foreground">Today's Tasks</h2>
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={() => setCurrentTab('tasks')}
-              className="text-muted-foreground"
+              className="text-muted-foreground text-sm"
             >
               View all
               <ChevronRight className="w-4 h-4 ml-1" />
@@ -122,12 +121,12 @@ export const Dashboard = () => {
           </div>
 
           {todaysTasks.length === 0 ? (
-            <Card className="p-6 text-center">
+            <Card className="p-6 text-center rounded-2xl border-0 shadow-sm bg-card">
               <div className="text-4xl mb-2">🎉</div>
-              <p className="text-muted-foreground">No tasks for today!</p>
+              <p className="text-muted-foreground text-sm">No tasks for today!</p>
               <Button 
                 onClick={() => setCurrentTab('tasks')} 
-                className="mt-4"
+                className="mt-4 rounded-full"
                 size="sm"
               >
                 <Plus className="w-4 h-4 mr-2" />
@@ -144,12 +143,7 @@ export const Dashboard = () => {
                   transition={{ delay: 0.1 * index }}
                 >
                   <Card 
-                    className={cn(
-                      'p-4 flex items-center gap-3 cursor-pointer transition-all hover:shadow-md',
-                      task.urgencyLevel === 'high' && 'urgency-high',
-                      task.urgencyLevel === 'medium' && 'urgency-medium',
-                      task.urgencyLevel === 'low' && 'urgency-low',
-                    )}
+                    className="p-4 flex items-center gap-3 cursor-pointer transition-all hover:shadow-md rounded-2xl border-0 shadow-sm bg-card"
                     onClick={() => handleTaskAction(task)}
                   >
                     <div className="flex-1 min-w-0">
@@ -162,31 +156,17 @@ export const Dashboard = () => {
                           </span>
                         )}
                       </div>
-                      <h3 className="font-medium text-foreground truncate">{task.title}</h3>
+                      <h3 className="font-medium text-foreground text-sm truncate">{task.title}</h3>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-xp">
-                        +{task.points} XP
-                      </span>
-                      <Button 
-                        size="sm" 
-                        className="h-8 px-3"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTaskAction(task);
-                        }}
-                      >
-                        {task.type === 'focus' ? 'Start' : 'Done'}
-                      </Button>
-                    </div>
+                    <div className="w-5 h-5 rounded-md border-2 border-muted-foreground/30" />
                   </Card>
                 </motion.div>
               ))}
 
               {todaysTasks.length > 3 && (
                 <Button 
-                  variant="outline" 
-                  className="w-full"
+                  variant="ghost" 
+                  className="w-full text-muted-foreground text-sm"
                   onClick={() => setCurrentTab('tasks')}
                 >
                   +{todaysTasks.length - 3} more tasks
@@ -201,7 +181,7 @@ export const Dashboard = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="text-center py-4"
+          className="text-center py-2"
         >
           <p className="text-sm italic text-muted-foreground">"{quote.content}"</p>
           <p className="text-xs text-muted-foreground/70 mt-1">— {quote.author}</p>
@@ -216,7 +196,7 @@ export const Dashboard = () => {
         >
           <Button
             size="lg"
-            className="w-14 h-14 rounded-full shadow-lg"
+            className="w-14 h-14 rounded-full shadow-lg bg-foreground text-background hover:bg-foreground/90"
             onClick={() => setCurrentTab('tasks')}
           >
             <Plus className="w-6 h-6" />

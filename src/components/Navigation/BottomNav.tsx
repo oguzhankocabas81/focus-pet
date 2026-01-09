@@ -19,7 +19,7 @@ export const BottomNav = () => {
   const currentTab = app.currentTab;
 
   return (
-    <nav className="bottom-nav z-50">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border/30" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
         {tabs.map((tab) => {
           const isActive = currentTab === tab.id;
@@ -32,32 +32,21 @@ export const BottomNav = () => {
               className={cn(
                 'relative flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-colors',
                 isActive 
-                  ? 'text-primary' 
+                  ? 'text-foreground' 
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <AnimatePresence>
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-indicator"
-                    className="absolute inset-0 bg-primary/10 rounded-2xl"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
-              </AnimatePresence>
               <Icon 
                 size={22} 
                 className={cn(
-                  'relative z-10 transition-transform',
+                  'transition-all',
                   isActive && 'scale-110'
                 )}
+                strokeWidth={isActive ? 2.5 : 2}
               />
               <span 
                 className={cn(
-                  'relative z-10 text-[10px] font-medium mt-0.5',
+                  'text-[10px] font-medium mt-0.5',
                   isActive ? 'opacity-100' : 'opacity-70'
                 )}
               >
