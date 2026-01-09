@@ -1,14 +1,16 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, RotateCcw, SkipForward, Coffee, Target } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { PetBase, getEvolutionStage } from '@/components/Pet/PetBase';
 import { useGameStore } from '@/store/gameStore';
 import { cn } from '@/lib/utils';
 
 export const PomodoroTimer = () => {
   const { 
     pomodoro, 
+    pet,
+    user,
     tasks,
     startPomodoro, 
     pausePomodoro, 
@@ -30,12 +32,10 @@ export const PomodoroTimer = () => {
     const interval = setInterval(() => {
       if (pomodoro.timeRemaining <= 1) {
         completePomodoro();
-        // Play notification sound
         try {
           const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
           audio.play().catch(() => {});
         } catch {}
-        // Browser notification
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification(pomodoro.mode === 'focus' ? '🎉 Focus session complete!' : '☕ Break time over!');
         }
@@ -47,7 +47,6 @@ export const PomodoroTimer = () => {
     return () => clearInterval(interval);
   }, [pomodoro.isRunning, pomodoro.isPaused, pomodoro.timeRemaining]);
 
-  // Request notification permission
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
@@ -69,42 +68,14 @@ export const PomodoroTimer = () => {
     return ((total - pomodoro.timeRemaining) / total) * 100;
   };
 
-  const getModeConfig = () => {
-    switch (pomodoro.mode) {
-      case 'focus':
-        return {
-          label: 'Focus Time',
-          icon: Target,
-          color: 'text-primary',
-          bgColor: 'from-primary/20 to-primary/5',
-          strokeColor: 'stroke-primary',
-        };
-      case 'shortBreak':
-        return {
-          label: 'Short Break',
-          icon: Coffee,
-          color: 'text-success',
-          bgColor: 'from-success/20 to-success/5',
-          strokeColor: 'stroke-success',
-        };
-      case 'longBreak':
-        return {
-          label: 'Long Break',
-          icon: Coffee,
-          color: 'text-accent',
-          bgColor: 'from-accent/20 to-accent/5',
-          strokeColor: 'stroke-accent',
-        };
-    }
-  };
-
-  const config = getModeConfig();
-  const Icon = config.icon;
   const progress = getProgress();
+  const circumference = 2 * Math.PI * 120;
+  const strokeDashoffset = circumference * (1 - progress / 100);
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6">
-      <div className="max-w-lg mx-auto">
+    <div className="min-h-screen pb-24 px-4 pt-8 bg-background flex flex-col items-center">
+      <div className="max-w-lg mx-auto w-full flex flex-col items-center">
+        
         {/* Current Task */}
         {currentTask && (
           <motion.div
@@ -112,72 +83,60 @@ export const PomodoroTimer = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-6"
           >
-            <p className="text-sm text-muted-foreground">Currently working on</p>
+            <p className="text-sm text-muted-foreground">Working on</p>
             <h2 className="text-lg font-semibold text-foreground truncate px-4">
               {currentTask.title}
             </h2>
           </motion.div>
         )}
 
-        {/* Timer Display */}
+        {/* Circular Timer */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex justify-center"
+          className="relative w-72 h-72 flex items-center justify-center"
         >
-          <Card className={cn(
-            'relative w-72 h-72 rounded-full flex items-center justify-center',
-            'bg-gradient-to-b',
-            config.bgColor
-          )}>
-            {/* Progress Ring */}
-            <svg 
-              className="absolute inset-0 w-full h-full -rotate-90"
-              viewBox="0 0 100 100"
-            >
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                strokeWidth="4"
-                className="stroke-muted"
-              />
-              <motion.circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                strokeWidth="4"
-                strokeLinecap="round"
-                className={config.strokeColor}
-                strokeDasharray={`${2 * Math.PI * 45}`}
-                strokeDashoffset={`${2 * Math.PI * 45 * (1 - progress / 100)}`}
-                initial={false}
-                animate={{ 
-                  strokeDashoffset: `${2 * Math.PI * 45 * (1 - progress / 100)}` 
-                }}
-                transition={{ duration: 0.5 }}
-              />
-            </svg>
+          {/* Progress Ring */}
+          <svg className="absolute inset-0 w-full h-full -rotate-90">
+            {/* Background circle */}
+            <circle
+              cx="144"
+              cy="144"
+              r="120"
+              fill="none"
+              strokeWidth="8"
+              className="stroke-muted"
+            />
+            {/* Progress circle */}
+            <motion.circle
+              cx="144"
+              cy="144"
+              r="120"
+              fill="none"
+              strokeWidth="8"
+              strokeLinecap="round"
+              className="stroke-primary"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              initial={false}
+              animate={{ strokeDashoffset }}
+              transition={{ duration: 0.5 }}
+            />
+          </svg>
 
-            {/* Timer Content */}
-            <div className="relative z-10 text-center">
-              <div className={cn('flex items-center justify-center gap-2 mb-2', config.color)}>
-                <Icon className="w-5 h-5" />
-                <span className="text-sm font-medium">{config.label}</span>
-              </div>
-              <motion.div
-                key={pomodoro.timeRemaining}
-                className="text-5xl font-bold text-foreground font-mono"
-              >
-                {formatTime(pomodoro.timeRemaining)}
-              </motion.div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Pomodoro {pomodoro.completedPomodoros + 1}/4
-              </p>
-            </div>
-          </Card>
+          {/* Timer Content */}
+          <div className="relative z-10 text-center">
+            <p className="text-lg text-muted-foreground mb-1">{Math.round(progress)}%</p>
+            <motion.div
+              key={pomodoro.timeRemaining}
+              className="text-6xl font-bold text-foreground tracking-tight"
+            >
+              {formatTime(pomodoro.timeRemaining)}
+            </motion.div>
+            <p className="text-sm text-muted-foreground mt-2">
+              Pomodoro {pomodoro.completedPomodoros + 1} of 4
+            </p>
+          </div>
         </motion.div>
 
         {/* Controls */}
@@ -185,93 +144,100 @@ export const PomodoroTimer = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex justify-center gap-4 mt-8"
+          className="flex justify-center items-center gap-6 mt-8"
         >
           {/* Reset */}
           <Button
-            variant="outline"
+            variant="ghost"
             size="lg"
             className="w-14 h-14 rounded-full"
             onClick={stopPomodoro}
           >
-            <RotateCcw className="w-5 h-5" />
+            <RotateCcw className="w-6 h-6 text-muted-foreground" />
           </Button>
 
           {/* Play/Pause */}
           {!pomodoro.isRunning ? (
             <Button
               size="lg"
-              className="w-20 h-20 rounded-full shadow-lg"
+              className="w-20 h-20 rounded-full shadow-xl bg-foreground text-background hover:bg-foreground/90"
               onClick={() => startPomodoro(pomodoro.currentTaskId || undefined)}
             >
-              <Play className="w-8 h-8 ml-1" />
+              <Play className="w-10 h-10 ml-1" fill="currentColor" />
             </Button>
           ) : pomodoro.isPaused ? (
             <Button
               size="lg"
-              className="w-20 h-20 rounded-full shadow-lg"
+              className="w-20 h-20 rounded-full shadow-xl bg-foreground text-background hover:bg-foreground/90"
               onClick={resumePomodoro}
             >
-              <Play className="w-8 h-8 ml-1" />
+              <Play className="w-10 h-10 ml-1" fill="currentColor" />
             </Button>
           ) : (
             <Button
               size="lg"
-              className="w-20 h-20 rounded-full shadow-lg"
+              className="w-20 h-20 rounded-full shadow-xl bg-foreground text-background hover:bg-foreground/90"
               onClick={pausePomodoro}
             >
-              <Pause className="w-8 h-8" />
+              <Pause className="w-10 h-10" fill="currentColor" />
             </Button>
           )}
 
           {/* Skip */}
           <Button
-            variant="outline"
+            variant="ghost"
             size="lg"
             className="w-14 h-14 rounded-full"
             onClick={skipToBreak}
             disabled={pomodoro.mode !== 'focus'}
           >
-            <SkipForward className="w-5 h-5" />
+            <SkipForward className="w-6 h-6 text-muted-foreground" />
           </Button>
         </motion.div>
 
-        {/* Session Info */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mt-8 text-center"
-        >
-          <p className="text-sm text-muted-foreground">
-            {pomodoro.completedPomodoros} pomodoro{pomodoro.completedPomodoros !== 1 ? 's' : ''} completed today
-          </p>
-        </motion.div>
+        {/* Duration Options */}
+        {!pomodoro.isRunning && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex justify-center gap-3 mt-8"
+          >
+            {[15, 25, 45].map((mins) => (
+              <Button
+                key={mins}
+                variant={pomodoro.settings.focusDuration === mins ? "default" : "secondary"}
+                className={cn(
+                  "rounded-full px-5 py-2 text-sm font-medium",
+                  pomodoro.settings.focusDuration === mins 
+                    ? "bg-foreground text-background" 
+                    : "bg-secondary text-foreground"
+                )}
+                onClick={() => {
+                  useGameStore.getState().updatePomodoroSettings({ focusDuration: mins });
+                }}
+              >
+                {mins} min
+              </Button>
+            ))}
+          </motion.div>
+        )}
 
-        {/* Quick Start Options (when no task selected) */}
-        {!currentTask && !pomodoro.isRunning && (
+        {/* Meditating Pet */}
+        {pet && user && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             className="mt-8"
           >
-            <p className="text-center text-sm text-muted-foreground mb-4">
-              Or start a quick focus session
-            </p>
-            <div className="flex justify-center gap-3">
-              {[15, 25, 45].map((mins) => (
-                <Button
-                  key={mins}
-                  variant="outline"
-                  onClick={() => {
-                    useGameStore.getState().updatePomodoroSettings({ focusDuration: mins });
-                    startPomodoro();
-                  }}
-                >
-                  {mins} min
-                </Button>
-              ))}
+            <div className="w-32 h-32 mx-auto">
+              <PetBase 
+                type={pet.type} 
+                stage={getEvolutionStage(user.level)} 
+                size="lg" 
+                mood="happy"
+              />
             </div>
           </motion.div>
         )}

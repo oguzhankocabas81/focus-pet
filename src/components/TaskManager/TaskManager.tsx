@@ -1,31 +1,23 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Plus, Filter, Check, Clock, Trash2, 
-  Target, RotateCcw, Compass, Calendar,
-  AlertCircle, ChevronDown
+  Plus, Check, Clock, Trash2, 
+  Target, RotateCcw, Compass, ChevronDown, Calendar, AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { TaskBadge } from '@/components/Common/TaskBadge';
 import { useGameStore } from '@/store/gameStore';
-import { Task, TaskType, UrgencyLevel, TaskStatus } from '@/types';
+import { Task, TaskType, UrgencyLevel } from '@/types';
 import { TASK_POINTS } from '@/utils/constants';
 import { cn } from '@/lib/utils';
-import { format, parseISO, isToday, isTomorrow, isThisWeek, isBefore } from 'date-fns';
+import { format, parseISO, isToday, isTomorrow, isThisWeek } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
-type FilterType = 'all' | 'pending' | 'completed' | 'expired';
+type FilterType = 'all' | 'habit' | 'quest';
 
 export const TaskManager = () => {
   const { tasks, addTask, updateTask, deleteTask, completeTask, startFocusTask, setCurrentTab } = useGameStore();
@@ -34,6 +26,7 @@ export const TaskManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState<FilterType>('all');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -123,45 +116,19 @@ export const TaskManager = () => {
     }
   };
 
-  // Filter and group tasks
+  // Filter tasks by type
   const filteredTasks = tasks.filter((t) => {
-    if (filter === 'all') return true;
-    return t.status === filter;
+    if (filter === 'all') return t.status !== 'completed' && t.status !== 'expired';
+    return t.type === filter && t.status !== 'completed' && t.status !== 'expired';
   });
 
-  const groupTasks = (taskList: Task[]) => {
-    const groups: { [key: string]: Task[] } = {
-      today: [],
-      tomorrow: [],
-      thisWeek: [],
-      upcoming: [],
-      completed: [],
-      expired: [],
-    };
+  const completedTasks = tasks.filter(t => t.status === 'completed');
 
-    taskList.forEach((task) => {
-      if (task.status === 'completed') {
-        groups.completed.push(task);
-      } else if (task.status === 'expired') {
-        groups.expired.push(task);
-      } else {
-        const date = parseISO(task.dueDate);
-        if (isToday(date)) {
-          groups.today.push(task);
-        } else if (isTomorrow(date)) {
-          groups.tomorrow.push(task);
-        } else if (isThisWeek(date)) {
-          groups.thisWeek.push(task);
-        } else {
-          groups.upcoming.push(task);
-        }
-      }
-    });
-
-    return groups;
-  };
-
-  const groupedTasks = groupTasks(filteredTasks);
+  // Group tasks for Today's Focus section
+  const todayFocus = filteredTasks.filter(t => {
+    const date = parseISO(t.dueDate);
+    return isToday(date);
+  });
 
   const taskTypeOptions = [
     { value: 'focus', label: 'Focus', icon: Target, points: 50, color: 'text-focus' },
@@ -169,88 +136,108 @@ export const TaskManager = () => {
     { value: 'quest', label: 'Quest', icon: Compass, points: 25, color: 'text-quest' },
   ];
 
-  const renderTaskGroup = (label: string, taskList: Task[], icon?: React.ReactNode) => {
-    if (taskList.length === 0) return null;
-
-    return (
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          {icon}
-          <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-            {label}
-          </h3>
-          <span className="text-xs bg-muted px-2 py-0.5 rounded-full">
-            {taskList.length}
-          </span>
-        </div>
-        <div className="space-y-2">
-          {taskList.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onEdit={() => openModal(task)}
-              onDelete={() => handleDelete(task.id)}
-              onComplete={() => handleComplete(task)}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
+  const filterTabs = [
+    { id: 'all', label: 'All' },
+    { id: 'habit', label: 'Habits' },
+    { id: 'quest', label: 'Quests' },
+  ];
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6">
+    <div className="min-h-screen pb-24 px-4 pt-6 bg-background">
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-6"
+          className="mb-6"
         >
-          <h1 className="text-2xl font-bold text-foreground">Tasks</h1>
-          <div className="flex items-center gap-2">
-            <Select value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
-              <SelectTrigger className="w-32 h-9">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-              </SelectContent>
-            </Select>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Tasks</h1>
+          
+          {/* Filter Tabs */}
+          <div className="flex bg-secondary rounded-full p-1">
+            {filterTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setFilter(tab.id as FilterType)}
+                className={cn(
+                  'flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all',
+                  filter === tab.id 
+                    ? 'bg-card text-foreground shadow-sm' 
+                    : 'text-muted-foreground'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </motion.div>
 
-        {/* Task List */}
+        {/* Today's Focus Section */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
         >
-          {filteredTasks.length === 0 ? (
-            <Card className="p-8 text-center">
-              <div className="text-5xl mb-4">📋</div>
-              <h3 className="font-semibold text-foreground mb-2">No tasks yet</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Create your first task and start earning XP!
-              </p>
-              <Button onClick={() => openModal()}>
+          <h2 className="text-lg font-semibold text-foreground mb-3">Today's Focus</h2>
+          
+          {todayFocus.length === 0 ? (
+            <Card className="p-6 text-center rounded-2xl border-0 shadow-sm bg-card mb-6">
+              <div className="text-4xl mb-2">📋</div>
+              <p className="text-sm text-muted-foreground mb-4">No tasks for today</p>
+              <Button onClick={() => openModal()} className="rounded-full">
                 <Plus className="w-4 h-4 mr-2" />
-                Create Task
+                Add Task
               </Button>
             </Card>
           ) : (
-            <>
-              {renderTaskGroup('Today', groupedTasks.today, <Calendar className="w-4 h-4 text-primary" />)}
-              {renderTaskGroup('Tomorrow', groupedTasks.tomorrow)}
-              {renderTaskGroup('This Week', groupedTasks.thisWeek)}
-              {renderTaskGroup('Upcoming', groupedTasks.upcoming)}
-              {renderTaskGroup('Completed', groupedTasks.completed, <Check className="w-4 h-4 text-success" />)}
-              {renderTaskGroup('Expired', groupedTasks.expired, <AlertCircle className="w-4 h-4 text-destructive" />)}
-            </>
+            <div className="space-y-2 mb-6">
+              {todayFocus.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onEdit={() => openModal(task)}
+                  onDelete={() => handleDelete(task.id)}
+                  onComplete={() => handleComplete(task)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Completed Section */}
+          {completedTasks.length > 0 && (
+            <div className="mt-6">
+              <button
+                onClick={() => setShowCompleted(!showCompleted)}
+                className="flex items-center gap-2 text-muted-foreground mb-3"
+              >
+                <span className="font-medium">Completed ({completedTasks.length})</span>
+                <ChevronDown className={cn(
+                  "w-4 h-4 transition-transform",
+                  showCompleted && "rotate-180"
+                )} />
+              </button>
+              
+              <AnimatePresence>
+                {showCompleted && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-2"
+                  >
+                    {completedTasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onEdit={() => openModal(task)}
+                        onDelete={() => handleDelete(task.id)}
+                        onComplete={() => {}}
+                      />
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           )}
         </motion.div>
 
@@ -262,7 +249,7 @@ export const TaskManager = () => {
         >
           <Button
             size="lg"
-            className="w-14 h-14 rounded-full shadow-lg"
+            className="w-14 h-14 rounded-full shadow-lg bg-foreground text-background hover:bg-foreground/90"
             onClick={() => openModal()}
           >
             <Plus className="w-6 h-6" />
@@ -284,7 +271,7 @@ export const TaskManager = () => {
                 placeholder="What needs to be done?"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="h-12"
+                className="h-12 rounded-xl"
                 maxLength={100}
               />
 
@@ -293,7 +280,7 @@ export const TaskManager = () => {
                 placeholder="Add details (optional)"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="resize-none"
+                className="resize-none rounded-xl"
                 rows={2}
               />
 
@@ -337,7 +324,7 @@ export const TaskManager = () => {
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="h-11"
+                    className="h-11 rounded-xl"
                   />
                 </div>
                 <div>
@@ -348,7 +335,7 @@ export const TaskManager = () => {
                     type="time"
                     value={dueTime}
                     onChange={(e) => setDueTime(e.target.value)}
-                    className="h-11"
+                    className="h-11 rounded-xl"
                   />
                 </div>
               </div>
@@ -364,7 +351,7 @@ export const TaskManager = () => {
                       key={level}
                       onClick={() => setUrgency(level)}
                       className={cn(
-                        'p-2 rounded-lg border-2 transition-all capitalize text-sm',
+                        'p-2 rounded-xl border-2 transition-all capitalize text-sm',
                         urgency === level
                           ? level === 'high' 
                             ? 'border-destructive bg-destructive/10 text-destructive'
@@ -382,7 +369,7 @@ export const TaskManager = () => {
 
               {/* Submit Button */}
               <Button 
-                className="w-full h-12"
+                className="w-full h-12 rounded-full bg-foreground text-background hover:bg-foreground/90"
                 onClick={handleSubmit}
               >
                 {editingTask ? 'Save Changes' : 'Create Task'}
@@ -407,6 +394,28 @@ const TaskCard = ({ task, onEdit, onDelete, onComplete }: TaskCardProps) => {
   const isCompleted = task.status === 'completed';
   const isExpired = task.status === 'expired';
 
+  const getTypeIcon = () => {
+    switch (task.type) {
+      case 'habit':
+        return <RotateCcw className="w-4 h-4 text-habit" />;
+      case 'quest':
+        return <Compass className="w-4 h-4 text-quest" />;
+      default:
+        return <Target className="w-4 h-4 text-focus" />;
+    }
+  };
+
+  const getTypeLabel = () => {
+    switch (task.type) {
+      case 'habit':
+        return 'Habit';
+      case 'quest':
+        return 'Quest';
+      default:
+        return 'Focus';
+    }
+  };
+
   return (
     <motion.div
       layout
@@ -416,17 +425,35 @@ const TaskCard = ({ task, onEdit, onDelete, onComplete }: TaskCardProps) => {
     >
       <Card 
         className={cn(
-          'p-4 transition-all cursor-pointer hover:shadow-md',
-          task.urgencyLevel === 'high' && !isCompleted && 'urgency-high',
-          task.urgencyLevel === 'medium' && !isCompleted && 'urgency-medium',
-          task.urgencyLevel === 'low' && !isCompleted && 'urgency-low',
+          'p-4 transition-all cursor-pointer hover:shadow-md rounded-2xl border-0 shadow-sm bg-card',
           isCompleted && 'opacity-60',
-          isExpired && 'opacity-50 bg-muted',
+          isExpired && 'opacity-50',
         )}
         onClick={onEdit}
       >
-        <div className="flex items-start gap-3">
-          {/* Checkbox/Complete button */}
+        <div className="flex items-center gap-3">
+          {/* Icon */}
+          <div className={cn(
+            'w-10 h-10 rounded-xl flex items-center justify-center',
+            task.type === 'habit' && 'bg-habit/10',
+            task.type === 'quest' && 'bg-quest/10',
+            task.type === 'focus' && 'bg-focus/10',
+          )}>
+            {getTypeIcon()}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-muted-foreground">{getTypeLabel()}</p>
+            <h3 className={cn(
+              'font-medium text-foreground',
+              isCompleted && 'line-through'
+            )}>
+              {task.title}
+            </h3>
+          </div>
+
+          {/* Checkbox */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -434,58 +461,14 @@ const TaskCard = ({ task, onEdit, onDelete, onComplete }: TaskCardProps) => {
             }}
             disabled={isCompleted || isExpired}
             className={cn(
-              'mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
+              'w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all',
               isCompleted 
                 ? 'bg-success border-success' 
-                : 'border-border hover:border-primary'
+                : 'border-muted-foreground/30 hover:border-primary'
             )}
           >
             {isCompleted && <Check className="w-4 h-4 text-success-foreground" />}
           </button>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <TaskBadge type={task.type} size="sm" />
-              {task.dueTime && (
-                <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                  <Clock className="w-3 h-3" />
-                  {task.dueTime}
-                </span>
-              )}
-            </div>
-            <h3 className={cn(
-              'font-medium text-foreground',
-              isCompleted && 'line-through'
-            )}>
-              {task.title}
-            </h3>
-            {task.description && (
-              <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">
-                {task.description}
-              </p>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-1">
-            {!isCompleted && !isExpired && (
-              <span className="text-xs font-semibold text-xp mr-2">
-                +{task.points}
-              </span>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
         </div>
       </Card>
     </motion.div>
